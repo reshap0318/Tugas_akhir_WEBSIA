@@ -3,7 +3,7 @@
 namespace App\Http\Resources\Krs;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\Dosen\listCollection as dosenCollection;
+use App\Http\Resources\Kelas\listCollection as kelasCollection;
 
 class listCollection extends JsonResource
 {
@@ -12,10 +12,7 @@ class listCollection extends JsonResource
     {
         return [
             'idKrs' => $this->krsdtId,
-            'kode_matkul' => $this->kelas->matkul->mkkurKode,
-            'nama_matkul' => $this->kelas->matkul->mkkurNamaResmi,
-            'sks_matkul'  => $this->kelas->matkul->mkkurJumlahSksKurikulum,
-            'dosen' => dosenCollection::collection($this->kelas->dosens),
+            'kelas' => new kelasCollection($this->kelas),
             'status'    => ''
         ];
     }

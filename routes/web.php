@@ -9,12 +9,15 @@ $router->group(['prefix' => 'v1', 'namespace' => 'Api\v1'], function () use ($ro
     $router->get('units', 'UnitController@getUnits');
     $router->get('semester-aktif', 'SemesterProdiController@getSemesterAktif');
     
-    $router->get('/mahasiswa', 'MahasiswaController@getListData');
-    $router->group(['prefix' => 'mahasiswa/{nim}'], function () use ($router) {
-        $router->get('/', 'MahasiswaController@getData');
-        $router->get('/krs', 'MahasiswaController@getKrs');
-        $router->get('/list-semester', 'MahasiswaController@getListSemester');
-        $router->get('/sum-sks', 'MahasiswaController@getSumSks');
-        $router->get('/transkrip', 'MahasiswaController@getListTranskrip');
+    $router->get('/mahasiswa', 'Mahasiswa\MyController@getListData');
+    $router->group(['prefix' => 'mahasiswa/{nim}', 'namespace' => 'Mahasiswa'], function () use ($router) {
+        $router->get('/', 'MyController@getData');
+        $router->get('/krs', 'KrsController@getListData');
+        $router->get('/list-semester', 'SemesterController@getListData');
+        $router->get('/sum-sks', 'SksController@getSumery');
+        $router->get('/transkrip', 'TranskripController@getListTranskrip');
+        
+        $router->get('/kelas', 'KelasController@getListKelasNim');
+        $router->get('/kelas/{klsId}', 'KelasController@getDetailKelasNim');
     });
 });

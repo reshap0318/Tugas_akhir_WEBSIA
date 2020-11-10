@@ -1,90 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Api\v1;
+namespace App\Http\Controllers\Api\v1\Mahasiswa;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use App\Models\{
-    Mahasiswa,
-    Semester_Prodi,
-    Krs_Detil,
-    Matkul,
-    SKS_Jatah
-};
-use App\Http\Resources\{
-    Mahasiswa\listCollection as mahasiswaCollection,
-    Krs\listCollection as listKrsCollection,
-    SemesterProdi\listCollection as listSemesterProdiCollection
-};
 
-class MahasiswaController extends Controller
+class TranskripController extends Controller
 {
-    public function getListData()
-    {
-        try {
-            $data = Mahasiswa::where('mhsStakmhsrKode','A')->where('mhsNiu','<>',0)->get();
-            $data = mahasiswaCollection::collection($data);
-            return $this->MessageSuccess($data);
-        } catch (\Exception $e) {
-            return $this->MessageError($e->getMessage());
-        }
-    }
-
-    public function getData($nim)
-    {
-        try {
-            $data = Mahasiswa::find($nim);
-            $data = new mahasiswaCollection($data);
-            return $this->MessageSuccess($data);
-        } catch (\Exception $e) {
-            return $this->MessageError($e->getMessage());
-        }
-    }
-
-    public function getKrs($nim)
-    {
-        try {
-            $krs = Krs_Detil::whereRaw("krsdtKrsId in (select krsid from s_krs where krsMhsNiu = $nim)")->get();
-            $data = listKrsCollection::collection($krs);
-            return $this->MessageSuccess($data);
-        } catch (\Exception $e) {
-            return $this->MessageError($e->getMessage());
-        }
-    }
-
-    public function getListSemester($nim)
-    {
-        try {
-            $semesterProdi = Semester_Prodi::whereRaw("sempId in (select krsSempId from s_krs where krsMhsNiu = $nim)")->get();
-            $data = listSemesterProdiCollection::collection($semesterProdi);
-            return $this->MessageSuccess($data);
-        } catch (\Exception $e) {
-            return $this->MessageError($e->getMessage());
-        }
-    }
-
-    public function getSumSks($nim)
-    {
-        try {
-            $matkul = Matkul::whereRaw("mkkurId in (select klsMkkurId from s_kelas where klsId in (select krsdtKlsId from s_krs_detil where krsdtKrsId in (select krsId from s_krs where krsMhsNiu = $nim)))")->get();
-
-            $jatahSks= SKS_Jatah::where('krssksMhsNiu', $nim)->latest('krssksSempId')->first();
-            $totalJatah = $jatahSks ? $jatahSks->krssksJatahSksResmi : 0;
-
-            $krsAktif = Matkul::whereRaw("mkkurId in (select klsMkkurId from s_kelas where klsId in (select krsdtKlsId from s_krs_detil where krsdtKrsId in (select krsId from s_krs where krsMhsNiu = $nim && krsSempId in (select sempId from s_semester_prodi where sempIsAktif = 1))))")->get();
-            
-            $data = [
-                'total_sks' => $matkul->sum('mkkurJumlahSksKurikulum'),
-                'jatah_sks' => $totalJatah,
-                'sks_diambil' => $krsAktif->sum('mkkurJumlahSksKurikulum')
-            ];
-            return $this->MessageSuccess($data);
-        } catch (\Exception $e) {
-            return $this->MessageError($e->getMessage());
-        }
-    }
-
     public function getListTranskrip($nim)
     {
         try {
@@ -164,6 +86,4 @@ class MahasiswaController extends Controller
 
         return $result;
     }
-
-
 }

@@ -4,86 +4,50 @@ namespace App\Http\Controllers\Api\v1\Mahasiswa;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use App\Models\{Krs, Krs_Detil};
+use App\Http\Resources\Transkrip\listCollection;
 
 class TranskripController extends Controller
 {
     public function getListTranskrip($nim)
     {
         try {
-            $datas = DB::select("select 
-            s_semester.semId as semesterid, 
-            s_semester.semTahun as semestertahun, 
-            s_nama_semester_ref.nmsemrNama as semesternama,
-            s_matakuliah_kurikulum.mkkurKode as matkulkode,
-            s_matakuliah_kurikulum.mkkurNamaResmi as matkulnama,
-            s_krs_detil.krsdtSksMatakuliah as matkulsks,
-            s_krs_detil.krsdtKodeNilai as nilaikode
-            from s_krs
-            join s_semester_prodi on s_krs.krsSempId = s_semester_prodi.sempId
-            join s_semester on s_semester_prodi.sempSemId = s_semester.semId
-            join s_nama_semester_ref on s_semester.semNmsemrId = s_nama_semester_ref.nmsemrId
-            join s_krs_detil on s_krs.krsId = s_krs_detil.krsdtKrsId
-            join s_kelas on s_krs_detil.krsdtKlsId = s_kelas.klsId
-            join s_matakuliah_kurikulum on s_kelas.klsMkkurId = s_matakuliah_kurikulum.mkkurId
-            where 
-            s_krs.krsMhsNiu='$nim'
-            ");
-
-            $datas = $this->convertArrayTranskrip($datas);
-
+            $datas = Krs::where('krsMhsNiu',$nim)->whereRaw("krsId in (select krsdtKrsId from s_krs_detil where krsdtKodeNilai is not null)")->get();
+            $datas = listCollection::collection($datas);
             return $this->MessageSuccess($datas);
         } catch (\Throwable $th) {
             return $this->MessageError($th->getMessage());
         }
     }
 
-    public function convertArrayTranskrip($datas)
+    public function staticA($nim)
     {
-        $tempResult = [];
-
-        foreach ($datas as $data) {
-            if(count($tempResult)==0){
-                $temp = [];
-                $temp['semesterid'] = $data->semesterid;
-                $temp['semestertahun'] = $data->semestertahun;
-                $temp['semesternama'] = $data->semesternama;
-                $tempResult[1]['semester'] = $temp;
-            }
-
-            $key = null;
-            foreach ($tempResult as $k => $rs) {
-                if($rs['semester']['semesterid']==$data->semesterid){
-                    $key = $k;
-                }
-            }
-            
-            if($key){
-                $temp = [];
-                $temp['matkulkode'] = $data->matkulkode;
-                $temp['matkulnama'] = $data->matkulnama;
-                $temp['matkulsks'] = $data->matkulsks;
-                $temp['nilaikode'] = $data->nilaikode;
-                $tempResult[$key]['matkul'][] = $temp;
-            }else{
-                $temp = [];
-                $temp_ = [];
-                $temp_['semesterid'] = $data->semesterid;
-                $temp_['semestertahun'] = $data->semestertahun;
-                $temp_['semesternama'] = $data->semesternama;
-                $temp['matkulkode'] = $data->matkulkode;
-                $temp['matkulnama'] = $data->matkulnama;
-                $temp['matkulsks'] = $data->matkulsks;
-                $temp['nilaikode'] = $data->nilaikode;
-                $tempResult[] = ['semester' => $temp_,'matkul'=>[$temp]];
-            }
-
+        try{
+            $datas = Krs_Detil::selectRaw("count(krsdtKodeNilai) as  total, krsdtKodeNilai")->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu = $nim) and krsdtIsDipakaiTranskrip=1")->whereNotNull("krsdtKodeNilai")->groupby('krsdtKodeNilai')->get();
+            return $this->MessageSuccess($datas);
+        } catch (\Throwable $th) {
+            return $this->MessageError($th->getMessage());
         }
+    }
 
-        $result = [];
-        foreach ($tempResult as $arr) {
-            $result[] = $arr;
-        }   
-
-        return $result;
+    public function staticB($nim)
+    {
+        try{
+            $datas = Krs_Detil::selectRaw("
+                concat(nmsemrNama,SPACE(1),semTahun ) as semester_nama,
+                sum(krsdtBobotNilai * krsdtSksMatakuliah) as total_bobot, 
+                sum(krsdtSksMatakuliah) as total_sks, 
+                sum(krsdtBobotNilai * krsdtSksMatakuliah) / sum(krsdtSksMatakuliah) as ip_semester
+            ")->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu = $nim) and krsdtIsDipakaiTranskrip=1")
+            ->whereNotNull("krsdtKodeNilai")
+            ->join('s_krs','s_krs.krsId','=','s_krs_detil.krsdtKrsId')
+            ->join('s_semester_prodi','s_krs.krsSempId','=','s_semester_prodi.sempId')
+            ->join('s_semester','s_semester_prodi.sempSemId','=','s_semester.semId')
+            ->join('s_nama_semester_ref','s_semester.semNmsemrId','=','s_nama_semester_ref.nmsemrId')
+            ->groupby('krsdtKrsId')->get();
+            return $this->MessageSuccess($datas);
+        } catch (\Throwable $th) {
+            return $this->MessageError($th->getMessage());
+        }
     }
 }

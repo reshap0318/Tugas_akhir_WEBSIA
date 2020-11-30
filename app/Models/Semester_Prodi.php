@@ -8,6 +8,8 @@ class Semester_Prodi extends Model
 {
   protected $table = 's_semester_prodi';
   protected $primaryKey = 'sempId';
+  // public $incrementing = false;
+  public $timestamps = false;
 
   public function semester()
   {

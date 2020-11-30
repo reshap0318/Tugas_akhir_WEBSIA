@@ -3,7 +3,7 @@
 namespace App\Http\Resources\Kelas;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\Dosen\listCollection as dosenCollection;
+use App\Http\Resources\JadwalKuliah\listCollection as JadwalCollection;
 
 class listCollection extends JsonResource
 {
@@ -14,7 +14,7 @@ class listCollection extends JsonResource
             'kode_matkul' => $this->matkul->mkkurKode,
             'nama_matkul' => $this->matkul->mkkurNamaResmi,
             'sks_matkul'  => $this->matkul->mkkurJumlahSksKurikulum,
-            'dosen' => dosenCollection::collection($this->dosens),
+            'jadwal' => JadwalCollection::collection($this->jadwals),
         ];
     }
 }

@@ -13,7 +13,7 @@ class listCollection extends JsonResource
             'nip'   => $this->pegawai->PegNip,
             'nama'  => $this->pegawai->pegNama,
             'noHp'  => $this->pegawai->pegNoHP,
-            'nama_jurusan' => $this->pegawai->jurusan->jurNamaResmi
+            'nama_jurusan' => $this->pegawai->jurusan ? $this->pegawai->jurusan->jurNamaResmi : ""
         ];
     }
 }

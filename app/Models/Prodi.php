@@ -8,6 +8,8 @@ class Prodi extends Model
 {
     protected $table = 'program_studi';
     protected $primaryKey = 'prodiKode';
+    // public $incrementing = false;
+    public $timestamps = false;
 
     public function jurusan()
     {

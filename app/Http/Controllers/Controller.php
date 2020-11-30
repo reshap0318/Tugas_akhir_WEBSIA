@@ -13,10 +13,17 @@ class Controller extends BaseController
     public function MessageSuccess($success, $kode=null)
     {
         $kode = $kode ? $kode : $this->CodeSuccess;
+        if($success){
+            return response()->json([
+                'success' => true,
+                'data'    => $success,
+            ], $kode);
+        }
+
         return response()->json([
-            'success' => true,
-            'data'    => $success,
-        ], $kode);
+            'success' => false,
+            'errors'    => "Data Not Found",
+        ], 404);
     }
 
     public function MessageError($error, $kode=null)

@@ -13,7 +13,7 @@ class listCollection extends JsonResource
         return [
             'idKrs' => $this->krsdtId,
             'kelas' => new kelasCollection($this->kelas),
-            'status'    => ''
+            'status'    => $this->krsdtApproved
         ];
     }
 }

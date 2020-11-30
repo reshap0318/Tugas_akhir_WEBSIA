@@ -8,6 +8,8 @@ class Dosen extends Model
 {
     protected $table = 'dosen';
     protected $primaryKey = 'dsnPegNip';
+    // public $incrementing = false;
+    public $timestamps = false;
 
     public function pegawai()
     {

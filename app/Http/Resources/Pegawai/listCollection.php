@@ -9,7 +9,7 @@ class listCollection extends JsonResource
     public function toArray($request)
     {
         return [
-            'nip'   => $this->pegNip,
+            'nip'   => $this->PegNip,
             'nama'  => $this->pegNama,
             'noHp'  => $this->pegnoHp,
             'nama_jurusan' => $this->jurusan->jurNamaResmi

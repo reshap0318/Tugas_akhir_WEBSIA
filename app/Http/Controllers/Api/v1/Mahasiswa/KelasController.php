@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api\v1\Mahasiswa;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Kelas;
-use App\Http\Resources\Kelas\listCollection as kelasCollection;
+use App\Http\Resources\Kelas\{
+    listCollection as kelasCollection,
+    detailCollection as detailKelasCollection
+};
 
 class KelasController extends Controller
 {
@@ -27,7 +30,8 @@ class KelasController extends Controller
         
         try {
             $data = Kelas::where('klsId',$klsId)->first();
-            $data = new kelasCollection($data);
+            $data->nim = $nim;
+            $data = new detailKelasCollection($data);
             return $this->MessageSuccess($data);
         } catch (\Exception $e) {
             return $this->MessageError($e->getMessage());

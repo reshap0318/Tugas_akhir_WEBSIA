@@ -8,6 +8,8 @@ class Mahasiswa extends Model
 {
     protected $table = 'mahasiswa';
     protected $primaryKey = 'mhsNiu';
+    public $incrementing = false;
+    public $timestamps = false;
     
     public function prodi()
     {

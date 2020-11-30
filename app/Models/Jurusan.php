@@ -8,4 +8,6 @@ class Jurusan extends Model
 {
     protected $table = 'jurusan';
     protected $primaryKey = 'jurKode';
+    // public $incrementing = false;
+    public $timestamps = false;
 }

@@ -15,4 +15,9 @@ class Krs_Detil extends Model
     {
         return $this->hasOne(kelas::class, 'klsId', 'krsdtKlsId');
     }
+
+    public function krs()
+    {
+        return $this->hasOne(Krs::class, 'krsId', 'krsdtId');
+    }
 }

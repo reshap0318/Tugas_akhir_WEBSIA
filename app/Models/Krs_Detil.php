@@ -11,6 +11,8 @@ class Krs_Detil extends Model
     public $incrementing = false;
     public $timestamps = false;
 
+    protected $guarded = [];  
+
     public function kelas()
     {
         return $this->hasOne(kelas::class, 'klsId', 'krsdtKlsId');

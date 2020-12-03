@@ -12,7 +12,7 @@ class TranskripController extends Controller
     public function getListTranskrip($nim)
     {
         try {
-            $datas = Krs::where('krsMhsNiu',$nim)->whereRaw("krsId in (select krsdtKrsId from s_krs_detil where krsdtKodeNilai is not null)")->get();
+            $datas = Krs::where('krsMhsNiu',$nim)->whereRaw("krsId in (select krsdtKrsId from s_krs_detil where krsdtKodeNilai is not null)")->orderby('krsSempId','asc')->get();
             $datas = listCollection::collection($datas);
             return $this->MessageSuccess($datas);
         } catch (\Throwable $th) {
@@ -23,8 +23,16 @@ class TranskripController extends Controller
     public function staticA($nim)
     {
         try{
-            $datas = Krs_Detil::selectRaw("count(krsdtKodeNilai) as  total, krsdtKodeNilai")->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu = $nim) and krsdtIsDipakaiTranskrip=1")->whereNotNull("krsdtKodeNilai")->groupby('krsdtKodeNilai')->get();
-            return $this->MessageSuccess($datas);
+            $datas = DB::Select("select nlmkrKode from s_nilai_matakuliah_ref");
+            $hasil = [];
+            foreach($datas as $data){
+                $mNilai = Krs_Detil::selectRaw("count(krsdtKodeNilai) as  total")->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu = $nim) and krsdtIsDipakaiTranskrip=1")->whereNotNull("krsdtKodeNilai")->where("krsdtKodeNilai",$data->nlmkrKode)->first();
+                $hasil []= [
+                    'krsdtKodeNilai' => $data->nlmkrKode,
+                    'total' => $mNilai ? $mNilai->total : 0
+                ];
+            }
+            return $this->MessageSuccess($hasil);
         } catch (\Throwable $th) {
             return $this->MessageError($th->getMessage());
         }

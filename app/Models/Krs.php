@@ -11,6 +11,8 @@ class Krs extends Model
     // public $incrementing = false;
     public $timestamps = false;
 
+    protected $guarded = [];  
+
     public function kelas()
     {
       return $this->belongsToMany(Kelas::class, 's_krs_detil','krsdtKrsId','krsdtKlsId');

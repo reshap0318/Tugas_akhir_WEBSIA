@@ -16,8 +16,15 @@ $router->group(['prefix' => 'v1', 'namespace' => 'Api\v1'], function () use ($ro
     $router->group(['prefix' => 'mahasiswa/{nim}', 'namespace' => 'Mahasiswa'], function () use ($router) {
         $router->get('/', 'MyController@getData');
         $router->get('/list-semester', 'SemesterController@getListData');
-        $router->get('/krs', 'KrsController@getListData');
-        $router->get('/krs/{semester}', 'KrsController@getListDataSemester');
+
+        $router->group(['prefix' => 'krs'], function () use ($router) {
+            $router->get('', 'KrsController@getListData');
+            $router->post('/entry', 'KrsController@entry'); //x
+            $router->get('/isCanEntry', 'KrsController@isCanEntry'); //x
+            $router->get('/{semester}', 'KrsController@getListDataSemester');
+            $router->post('/{krsdtId}/chage-status/{status}','KrsController@changeStatus'); //x
+        });
+        
         $router->get('/sks-sum', 'SksController@getSumery');
         $router->get('/transkrip', 'TranskripController@getListTranskrip');
         $router->get('/staticA', 'TranskripController@staticA');

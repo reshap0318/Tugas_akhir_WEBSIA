@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Kelas extends Model
 {
@@ -26,16 +27,19 @@ class Kelas extends Model
       return $this->hasMany(Jadwal_Kuliah::class, 'jdkulKlsId', 'klsId');
   }
 
-  public function krsDetail()
+  public function krsDetailFromMatul()
   {
-      return $this->hasOne(Krs_Detil::class, 'krsdtklsid','klsId');
+      return $this->hasMany(Krs_Detil::class, 'krsdtMkkurId','klsMkkurId');
   }
 
   public function nilaiMahasiswa($nim=null)
   {
       //jikalau ada eloquent, maka returnnya harus eloquent, untuk mengatasinya, dibuatkan fungsi eloquent dan di panggil d fungsi ini
-      $dtKrs = $this->krsDetail;
-      $hasil = !empty($dtKrs) ? $dtKrs->join('s_krs','s_krs_detil.krsdtKrsId','=','krsId')->where('krsMhsNiu',$nim)->first()->krsdtKodeNilai : "";
+      $dtKrs = $this->krsDetailFromMatul()->join(DB::RAW("(select krsdtMkkurId, max(krsdtBobotNilai) as maxNilai from s_krs_detil where krsdtKrsId in (select krsId from s_krs where krsMhsNiu=$nim) GROUP by krsdtMkkurId) as tMaxNilai"), function($join){
+        $join->on("s_krs_detil.krsdtMkkurId","=","tMaxNilai.krsdtMkkurId");
+        $join->on("s_krs_detil.krsdtBobotNilai", "=", "tMaxNilai.maxNilai");
+      })->whereRaw("krsdtkrsid in (select krsid from s_krs where krsMhsNiu=$nim)")->first(); 
+      $hasil = $dtKrs ? $dtKrs->krsdtKodeNilai : "";
       return $hasil;
   }
 }

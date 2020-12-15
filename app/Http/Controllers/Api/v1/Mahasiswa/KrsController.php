@@ -12,7 +12,7 @@ use App\Models\{
     Matkul,
     SKS_Jatah,
     Mahasiswa_Registrasi,
-    Semester_Prodi
+    Semester_Prodi,
 };
 use App\Http\Resources\{
     Krs\listCollection as listKrsCollection
@@ -155,13 +155,59 @@ class KrsController extends Controller
         
     }
 
+    public function canChange()
+    {
+        $date = date("Y-m-d");
+        $date = "2018-08-04"; //untuk ujicoba
+        $data = Semester_Prodi::whereRaw("'$date' BETWEEN sempTanggalKrsMulai and sempTanggalKrsSelesai or '$date' BETWEEN sempTanggalRevisiMulai and sempTanggalRevisiSelesai")->first();
+
+        if($data){
+            return true;
+        }
+        return false;
+    }
+
+    public function isCanChange()
+    {
+        try {
+            $data = $this->canChange();
+            if($data){
+                return $this->MessageSuccess(["data" => true]);
+            }
+            return $this->MessageError(["data"=>false]);
+        } catch (\Exception $e) {
+            return $this->MessageError($e->getMessage());
+        }
+    }
+
     public function changeStatus($nim, $krsdtId, $status)
     {
         try {
+            if(!$this->canChange()){
+                return $this->MessageError("Not Time To Change Status KRS");
+            }
             $data = Krs_Detil::find($krsdtId);
             $data->krsdtApproved = $status;
             $data->save();
             return $this->MessageSuccess("Success Change Status KRS be ".$status);
+        } catch (\Exception $e) {
+            return $this->MessageError($e->getMessage());
+        }
+    }
+
+    public function deleteKrs($nim, $krsdtId)
+    {
+        try {
+            if(!$this->canEntry($nim)){
+                return $this->MessageError("Not Time To Change Status KRS");
+            }
+            $data = Krs_Detil::where("krsdtId",$krsdtId)->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu=$nim and krsSempId in ( select sempId from s_semester_prodi where sempIsAktif = 1))");
+            if($data->first()){
+                $data->delete();
+                return $this->MessageSuccess("Success Deleted KRS");
+            }else{
+                return $this->MessageError("Data Not Found");
+            }
         } catch (\Exception $e) {
             return $this->MessageError($e->getMessage());
         }

@@ -26,7 +26,12 @@ class TranskripController extends Controller
             $datas = DB::Select("select nlmkrKode from s_nilai_matakuliah_ref");
             $hasil = [];
             foreach($datas as $data){
-                $mNilai = Krs_Detil::selectRaw("count(krsdtKodeNilai) as  total")->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu = $nim) and krsdtIsDipakaiTranskrip=1")->whereNotNull("krsdtKodeNilai")->where("krsdtKodeNilai",$data->nlmkrKode)->first();
+                $mNilai = Krs_Detil::selectRaw("count(krsdtKodeNilai) as  total")->join(DB::RAW("(select krsdtMkkurId, max(krsdtBobotNilai) as maxNilai from s_krs_detil where krsdtKrsId in (select krsId from s_krs where krsMhsNiu=$nim) GROUP by krsdtMkkurId) as tMaxNilai"), function($join){
+                    $join->on("s_krs_detil.krsdtMkkurId","=","tMaxNilai.krsdtMkkurId");
+                    $join->on("s_krs_detil.krsdtBobotNilai", "=", "tMaxNilai.maxNilai");
+                })->whereNotNull('krsdtKodeNilai')->where(function ($query) {
+                    $query->where('krsdtApproved',1)->orWhereRaw('krsdtKlsId in (select klsId from s_kelas where klsSemId in (select semId from s_semester where semNmSemrId = 4))');
+                })->where('krsdtIsDipakaiTranskrip',1)->where("krsdtIsBatal",0)->whereRaw("krsdtkrsid in (select krsid from s_krs where krsMhsNiu=$nim)")->where("krsdtKodeNilai",$data->nlmkrKode)->first();
                 $hasil []= [
                     'krsdtKodeNilai' => $data->nlmkrKode,
                     'total' => $mNilai ? $mNilai->total : 0

@@ -20,6 +20,6 @@ class Krs_Detil extends Model
 
     public function krs()
     {
-        return $this->hasOne(Krs::class, 'krsId', 'krsdtId');
+        return $this->hasOne(Krs::class, 'krsId', 'krsdtKrsId');
     }
 }

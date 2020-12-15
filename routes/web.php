@@ -19,10 +19,12 @@ $router->group(['prefix' => 'v1', 'namespace' => 'Api\v1'], function () use ($ro
 
         $router->group(['prefix' => 'krs'], function () use ($router) {
             $router->get('', 'KrsController@getListData');
-            $router->post('/entry', 'KrsController@entry'); //x
-            $router->get('/isCanEntry', 'KrsController@isCanEntry'); //x
+            $router->post('/entry', 'KrsController@entry');
+            $router->delete('/delete/{krsdtId}', 'KrsController@deleteKrs');
+            $router->get('/isCanEntry', 'KrsController@isCanEntry');
+            $router->get('/isCanChange', 'KrsController@isCanChange');
             $router->get('/{semester}', 'KrsController@getListDataSemester');
-            $router->post('/{krsdtId}/chage-status/{status}','KrsController@changeStatus'); //x
+            $router->post('/{krsdtId}/chage-status/{status}','KrsController@changeStatus');
         });
         
         $router->get('/sks-sum', 'SksController@getSumery');
@@ -30,6 +32,8 @@ $router->group(['prefix' => 'v1', 'namespace' => 'Api\v1'], function () use ($ro
         $router->get('/staticA', 'TranskripController@staticA');
         $router->get('/staticB', 'TranskripController@staticB');
         
+        $router->get('/pembimbing', 'BimbinganController@getDosenPembimbing');
+
         $router->get('/kelas', 'KelasController@getListKelasNim');
         $router->get('/kelas/{klsId}', 'KelasController@getDetailKelasNim');
     });

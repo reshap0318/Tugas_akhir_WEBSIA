@@ -12,8 +12,10 @@ class listCollection extends JsonResource
     {
         return [
             'idKrs' => $this->krsdtId,
+            'semesterId' => $this->krs->semProdi->sempSemId,
             'kelas' => new kelasCollection($this->kelas),
-            'status'    => $this->krsdtApproved
+            'status'    => $this->krsdtApproved,
+            'nilai' => $this->krsdtKodeNilai
         ];
     }
 }

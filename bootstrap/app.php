@@ -84,6 +84,7 @@ $app->configure('filesystem');
 
 $app->routeMiddleware([
     'auth'          => App\Http\Middleware\Authenticate::class,
+    'appAuth'          => App\Http\Middleware\appKeyMiddleware::class,
     'permission'    => App\Http\Middleware\PermissionMiddleware::class,
     'role'          => App\Http\Middleware\RoleMiddleware::class,
 ]);

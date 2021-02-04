@@ -23,7 +23,7 @@ class TranskripController extends Controller
     public function staticA($nim)
     {
         try{
-            $datas = DB::Select("select nlmkrKode from s_nilai_matakuliah_ref");
+            $datas = DB::Select("select nlmkrKode from s_nilai_matakuliah_ref ORDER BY nlmkrBobot  DESC");
             $hasil = [];
             foreach($datas as $data){
                 $mNilai = Krs_Detil::selectRaw("count(krsdtKodeNilai) as  total")->join(DB::RAW("(select krsdtMkkurId, max(krsdtBobotNilai) as maxNilai from s_krs_detil where krsdtKrsId in (select krsId from s_krs where krsMhsNiu=$nim) GROUP by krsdtMkkurId) as tMaxNilai"), function($join){

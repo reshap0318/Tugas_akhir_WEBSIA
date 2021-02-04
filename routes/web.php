@@ -5,7 +5,7 @@ $router->get('/', function () use ($router) {
 });
 
 
-$router->group(['prefix' => 'v1', 'namespace' => 'Api\v1'], function () use ($router) {
+$router->group(['prefix' => 'v1', 'namespace' => 'Api\v1', 'middleware'=>'appAuth'], function () use ($router) {
     $router->get('units', 'UnitController@getUnits');
     $router->get('semester-aktif', 'SemesterController@getSemesterAktif');
     $router->get('list-semester', 'SemesterController@getListSemester');

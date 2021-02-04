@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\v1\Mahasiswa;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\{Validator,DB};
 use Illuminate\Http\Request;
 use App\Models\{
     Kelas,
@@ -75,9 +75,8 @@ class KrsController extends Controller
         $data = Mahasiswa_Registrasi::whereRaw("mhsregSemId in (SELECT sempSemId FROM  `s_semester_prodi` where '$date' BETWEEN sempTanggalKrsMulai and sempTanggalKrsSelesai or '$date' BETWEEN sempTanggalRevisiMulai and sempTanggalRevisiSelesai) and mhsregMhsNiu=$nim")->first();
         $sksController = new SksController();
         $sisaSks = $sksController->getSumeryData($nim);
-
         if($data){
-            if($sisaSks["sks_diambil"]+$newKrs <= $sisaSks["jatah_sks"]){
+            if($sisaSks["sks_diambil"]+$newKrs <= $sisaSks["jatah_sks"]+1){
                 return true;
             }
             return false;
@@ -135,7 +134,12 @@ class KrsController extends Controller
             if($isInKrsDt){
                 return $this->MessageError(["data"=>"Kelas Alredy Axist"]);
             }
+
+            $isInTime = DB::SELECT(DB::RAW("SELECT s_krs_detil.* FROM `s_krs_detil` join s_kelas on s_krs_detil.krsdtKlsId = s_kelas.klsId join s_jadwal_kuliah on s_kelas.klsId = s_jadwal_kuliah.jdkulKlsId join (SELECT jdkulHari, jdkulJamMulai, jdKulJamSelesai FROM `s_jadwal_kuliah` where jdkulKlsId = $klsId) as mJadwal on mJadwal.jdkulHari = s_jadwal_kuliah.jdkulHari and (mJadwal.jdkulJamMulai BETWEEN s_jadwal_kuliah.jdkulJamMulai and s_jadwal_kuliah.jdkulJamSelesai or mJadwal.jdkulJamSelesai BETWEEN s_jadwal_kuliah.jdkulJamMulai and s_jadwal_kuliah.jdkulJamSelesai)where krsdtKrsId = '$krsId'"));
             
+            if(count($isInTime)>0){
+                return $this->MessageError(["data"=>"this schedule clash"]);
+            }
             $krsdtId = Krs_Detil::latest('krsdtId')->first()->krsdtId + 1;
 
             Krs_Detil::create([
@@ -201,7 +205,7 @@ class KrsController extends Controller
             if(!$this->canEntry($nim)){
                 return $this->MessageError("Not Time To Change Status KRS");
             }
-            $data = Krs_Detil::where("krsdtId",$krsdtId)->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu=$nim and krsSempId in ( select sempId from s_semester_prodi where sempIsAktif = 1))");
+            $data = Krs_Detil::where("krsdtId",$krsdtId)->where('krsdtApproved','0')->whereRaw("krsdtKrsId in (select krsId from s_krs where krsMhsNiu=$nim and krsSempId in ( select sempId from s_semester_prodi where sempIsAktif = 1))");
             if($data->first()){
                 $data->delete();
                 return $this->MessageSuccess("Success Deleted KRS");
